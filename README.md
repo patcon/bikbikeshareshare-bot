@@ -9,9 +9,11 @@ Currently it is preparing to detect shared location pins with variants of ":bike
 - [x] get signal-cli working
 - [x] detect messages
 - [x] extract latitude and longitude
-- [ ] auth with bikeshare api
+- [ ] talk to bikeshare api with auth token
 - [ ] find nearest station
 - [ ] get ride code
+- [ ] do real user/pass auth with bikeshare api
+- [ ] figure out dbus messaging bus
 
 ## Usage
 
