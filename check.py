@@ -44,7 +44,7 @@ RE_LATLON = re.compile(r"""(
               )
 @click.option('--bikeshare-api-key', '-k',
               required=True,
-              default='',
+              default='b71d6720c8f211e7b7ee0a3571039f73',
               help='Bikeshare Toronto application API key',
               envvar='2B2S_BIKESHARE_API_KEY',
               )
