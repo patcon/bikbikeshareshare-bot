@@ -27,22 +27,33 @@ RE_LATLON = re.compile(r"""(
                         )""", re.VERBOSE)
 
 @click.command(context_settings=CONTEXT_SETTINGS)
-@click.option('--bikeshare-user',
-              required=True,
+@click.option('--bikeshare-user', '-u',
+              required=False,
               help='Bikeshare Toronto member account username.',
               envvar='2B2S_BIKESHARE_USER',
               )
-@click.option('--bikeshare-pass',
-              required=True,
+@click.option('--bikeshare-pass', '-p',
+              required=False,
               help='Bikeshare Toronto member account password',
               envvar='2B2S_BIKESHARE_PASS',
               )
-@click.option('--signal-group', '-c',
+@click.option('--bikeshare-auth-token', '-t',
+              required=True,
+              help='Bikeshare Toronto member account derived authorization token',
+              envvar='2B2S_BIKESHARE_AUTH_TOKEN',
+              )
+@click.option('--bikeshare-api-key', '-k',
+              required=True,
+              default='',
+              help='Bikeshare Toronto application API key',
+              envvar='2B2S_BIKESHARE_API_KEY',
+              )
+@click.option('--signal-group', '-g',
               required=True,
               help='Signal messengers group ID',
               envvar='2B2S_SIGNAL_GROUP_ID',
               )
-def check_signal_group(bikeshare_user, bikeshare_pass, signal_group):
+def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bikeshare_api_key, signal_group):
     """Check messages in a Signal group for Bikeshare Toronto code requests."""
 
     proc = subprocess.run(
