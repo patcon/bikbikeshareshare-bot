@@ -48,22 +48,25 @@ def check_signal_group(bikeshare_user, bikeshare_pass, signal_group):
             stdout=subprocess.PIPE,
             text=True,
             )
-    messages_data = json.loads(proc.stdout)
-    print(messages_data)
-    msg = messages_data['envelope']['syncMessage']['sentMessage']
-    print(msg['message'])
-    is_group = msg['groupInfo']['groupId'] == signal_group
-    if is_group:
-        print("Parsing new messages in Signal group...")
+    for line in proc.stdout.strip().split('\n'):
+        print(line)
+        messages_data = json.loads(line)
+        print(messages_data)
+        msg = messages_data['envelope']['syncMessage']['sentMessage']
+        print(msg['message'])
+        is_group = msg['groupInfo']['groupId'] == signal_group
+        if is_group:
+            print("Parsing new messages in Signal group...")
 
-        found_request = RE_REQUEST.search(msg['message'])
-        if found_request and found_request:
-            print("Request detected!")
-            found_location = RE_LATLON.search(msg['message'])
-            if found_location:
-                full, latitude, longitude, *kw = found_location.groups()
-                print(latitude)
-                print(longitude)
+            found_request = RE_REQUEST.search(msg['message'])
+            print(found_request)
+            if found_request:
+                print("Request detected!")
+                found_location = RE_LATLON.search(msg['message'])
+                if found_location:
+                    full, latitude, longitude, *kw = found_location.groups()
+                    print(latitude)
+                    print(longitude)
 
 if __name__ == '__main__':
     check_signal_group()
