@@ -5,6 +5,25 @@ import subprocess
 
 CONTEXT_SETTINGS = dict(help_option_names=['--help', '-h'])
 
+# For recognizing a "bike request" message.
+RE_REQUEST = re.compile(r"""(
+                            [
+                                \U0001f6b2 # bike emoji
+                                \U0001f6b4 # person on bike emoji
+                                \U0001f6b5 # person on mountain bike emoji
+                            ]
+                            .*
+                            \U0001f64f     # pray emoji
+                        )""", re.VERBOSE)
+
+# For capturing latitude and longitude from a "bike request" message.
+RE_LATLON = re.compile(r"""(
+                            https://maps\.google\.com/maps\?q=
+                            (-?[\d\.]+)    # latitude
+                            %2C
+                            (-?[\d.]+)     # longitude
+                        )""", re.VERBOSE)
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('--bikeshare-user',
               required=True,
@@ -31,32 +50,20 @@ def check_signal_group(bikeshare_user, bikeshare_pass, signal_group):
             )
     messages_data = json.loads(proc.stdout)
     print(messages_data)
-    message = messages_data['envelope']['syncMessage']['sentMessage']['message']
-    print(message)
-    # One of the three bike emoji plus a pray emoji, with space for extra skin tone code points.
-    RE_REQUEST = re.compile(r"""
-                                [
-                                    \U0001f6b2 # bike emoji
-                                    \U0001f6b4 # person on bike emoji
-                                    \U0001f6b5 # person on mountain bike emoji
-                                ]
-                                .*
-                                \U0001f64f     # pray emoji
-                            """, re.VERBOSE)
-    RE_LATLON = re.compile(r"""
-                                https://maps\.google\.com/maps\?q=
-                                (-?[\d\.]+)    # latitude
-                                %2C
-                                (-?[\d.]+)     # longitude
-                            """, re.VERBOSE)
-    found_request = RE_REQUEST.search(message)
-    if found_request:
-        print("Request detected!")
-        match = RE_LATLON.search(message)
-        lat = match.group(1)
-        lon = match.group(2)
-        print(lat)
-        print(lon)
+    msg = messages_data['envelope']['syncMessage']['sentMessage']
+    print(msg['message'])
+    is_group = msg['groupInfo']['groupId'] == signal_group
+    if is_group:
+        print("Parsing new messages in Signal group...")
+
+        found_request = RE_REQUEST.search(msg['message'])
+        if found_request and found_request:
+            print("Request detected!")
+            found_location = RE_LATLON.search(msg['message'])
+            if found_location:
+                full, latitude, longitude, *kw = found_location.groups()
+                print(latitude)
+                print(longitude)
 
 if __name__ == '__main__':
     check_signal_group()
