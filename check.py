@@ -5,16 +5,18 @@ import subprocess
 
 CONTEXT_SETTINGS = dict(help_option_names=['--help', '-h'])
 
-# For recognizing a "bike request" message.
-RE_REQUEST = re.compile(r"""(
+# For recognizing a "bike request" message, regardless of skin-tone or gender.
+RE_REQUEST = re.compile(re.sub(r'\n +', '', r"""
                             [
-                                \U0001f6b2 # bike emoji
-                                \U0001f6b4 # person on bike emoji
-                                \U0001f6b5 # person on mountain bike emoji
+                                \N{BICYCLE}
+                                \N{BICYCLIST}
+                                \N{MOUNTAIN BICYCLIST}
                             ]
-                            .*
-                            \U0001f64f     # pray emoji
-                        )""", re.VERBOSE)
+                            [\N{Emoji Modifier Fitzpatrick Type-1-2}-\N{Emoji Modifier Fitzpatrick Type-6}]?
+                            (\N{Zero Width Joiner}[\N{Female Sign}\N{Male Sign}\N{Male and Female Sign}]\N{Variation Selector-16})?
+                            \s*
+                            \N{PERSON WITH FOLDED HANDS}
+                        """), re.VERBOSE)
 
 # For capturing latitude and longitude from a "bike request" message.
 RE_LATLON = re.compile(r"""(
