@@ -18,8 +18,31 @@ Currently it is preparing to detect shared location pins with variants of ":bike
 ## Usage
 
 ```
-pipenv install
-cp sample.env .env
-vim .env
-pipenv run python check.py
+$ pipenv install
+$ cp sample.env .env
+$ vim .env
+$ pipenv run python check.py --help
+
+Usage: check.py [OPTIONS]
+
+  Check messages in a Signal group for Bikeshare Toronto code requests.
+
+Options:
+  -u, --bikeshare-user TEXT       Bikeshare Toronto member account username
+                                  (not yet functional)
+
+  -p, --bikeshare-pass TEXT       Bikeshare Toronto member account password
+                                  (not yet functional)
+
+  -t, --bikeshare-auth-token TEXT
+                                  Bikeshare Toronto member account derived
+                                  authorization token  [required]
+
+  -k, --bikeshare-api-key TEXT    Bikeshare Toronto application API key
+                                  [required]
+
+  -g, --signal-group TEXT         Signal messengers group ID  [required]
+  --noop                          Fake contact to Bikeshare servers
+  -d, --debug                     Show debug output
+  -h, --help                      Show this message and exit.
 ```
