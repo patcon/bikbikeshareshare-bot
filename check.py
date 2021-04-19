@@ -3,6 +3,32 @@ import json
 import re
 import subprocess
 
+from math import cos, sqrt
+import sys
+
+ALL_STATIONS = json.loads(open("station_information.json").read())['data']['stations']
+R = 6371000 # radius of the Earth in m
+
+def distance(lon1, lat1, lon2, lat2):
+    x = (float(lon2)-float(lon1)) * cos(0.5*(float(lat2)+float(lat1)))
+    y = (float(lat2)-float(lat1))
+    return R * sqrt( x*x + y*y )
+
+def get_nearest_stations(lat, lon):
+    nearsort = lambda d: distance(d['lon'], d['lat'], lon, lat)
+    return sorted(ALL_STATIONS, key=nearsort)
+
+def emojify_bike_code(code):
+    code = code.replace('1', r'\N{Keycap One}')
+    code = code.replace('2', r'\N{Keycap Two}')
+    code = code.replace('3', r'\N{Keycap Three}')
+    return code
+
+def generate_reply(lat, lon, code):
+    template = "https://maps.google.com/maps?q={}%2C{}\n\n{}"
+    return template.format(lat, lon, code)
+
+
 CONTEXT_SETTINGS = dict(help_option_names=['--help', '-h'])
 
 # For recognizing a "bike request" message, regardless of skin-tone or gender.
@@ -95,6 +121,19 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
                         if debug:
                             print(latitude)
                             print(longitude)
+
+                        print('Fetching nearest station...')
+                        nearest_stations = get_nearest_stations(latitude, longitude)
+                        station = nearest_stations[0]
+
+                        code = '11231'
+                        code = emojify_bike_code(code)
+
+                        reply_msg = generate_reply(station['lat'], station['lon'], code)
+
+                        if debug:
+                            print(station)
+                            print(reply_msg)
 
 if __name__ == '__main__':
     check_signal_group()
