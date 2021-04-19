@@ -4,6 +4,10 @@ A bot for watching a Signal messenger group, and sharing bikeshare pin codes for
 
 Currently it is preparing to detect shared location pins with variants of ":bike::pray:" in the description.
 
+Right now, it only checks and responds to messages when command is run locally.
+It will need to be "daemonized" as a perpetually-running service in order to be
+functional.
+
 ## To Do
 
 - [x] get signal-cli working
@@ -14,6 +18,7 @@ Currently it is preparing to detect shared location pins with variants of ":bike
 - [ ] get ride code
 - [ ] do real user/pass auth with bikeshare api
 - [ ] figure out dbus messaging bus
+- [ ] Daemonize it somewhere in the cloud
 
 ## Usage
 
