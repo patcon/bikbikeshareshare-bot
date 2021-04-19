@@ -13,9 +13,9 @@ functional.
 - [x] get signal-cli working
 - [x] detect messages
 - [x] extract latitude and longitude
-- [ ] talk to bikeshare api with auth token
-- [ ] find nearest station
-- [ ] get ride code
+- [x] talk to bikeshare api with auth token
+- [x] find nearest station
+- [x] get ride code
 - [ ] do real user/pass auth with bikeshare api
 - [ ] figure out dbus messaging bus
 - [ ] Daemonize it somewhere in the cloud

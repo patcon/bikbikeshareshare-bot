@@ -153,9 +153,13 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
                         BASE_URL = 'https://tor.publicbikesystem.net/customer'
                         uri_path = '/v3/stations/{}/geofence-ride-codes'
 
+                        stackify_uuid = '0abd9999-d354-425d-000a-7a0338134d3b'
                         headers = {
-                                'X-Api-Key': bikeshare_api_key,
-                                'X-Auth-Token': bikeshare_auth_token,
+                                'cookie': '.Stackify.Rum={}'.format(stackify_uuid),
+                                'user-agent': 'okhttp/3.12.1',
+                                'accept-encoding': 'gzip',
+                                'x-api-key': bikeshare_api_key,
+                                'x-auth-token': bikeshare_auth_token,
                                 }
 
                         payload = {
