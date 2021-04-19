@@ -56,30 +56,45 @@ RE_LATLON = re.compile(r"""(
 def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bikeshare_api_key, signal_group):
     """Check messages in a Signal group for Bikeshare Toronto code requests."""
 
+    debug = True
+
     proc = subprocess.run(
             ["signal-cli", "--output", "json", "receive"],
             stdout=subprocess.PIPE,
             text=True,
             )
-    for line in proc.stdout.strip().split('\n'):
-        print(line)
+    messages = proc.stdout.strip().split('\n')
+    messages = [m for m in messages if m != '']
+    for line in messages:
         messages_data = json.loads(line)
-        print(messages_data)
-        msg = messages_data['envelope']['syncMessage']['sentMessage']
-        print(msg['message'])
-        is_group = msg['groupInfo']['groupId'] == signal_group
-        if is_group:
-            print("Parsing new messages in Signal group...")
+        if debug: print(messages_data)
 
-            found_request = RE_REQUEST.search(msg['message'])
-            print(found_request)
-            if found_request:
-                print("Request detected!")
-                found_location = RE_LATLON.search(msg['message'])
-                if found_location:
-                    full, latitude, longitude, *kw = found_location.groups()
-                    print(latitude)
-                    print(longitude)
+        def get_message(data):
+            sync_message = data['envelope'].get('syncMessage', None)
+            if sync_message:
+                sent_message = sync_message.get('sentMessage', None)
+                return sent_message
+
+            return None
+
+        msg = get_message(messages_data)
+
+        if msg:
+            if debug: print(msg['message'])
+            group = msg.get('groupInfo', None)
+            if group and group['groupId'] == signal_group:
+                print("Parsing new messages in Signal group...")
+
+                found_request = RE_REQUEST.search(msg['message'])
+                if debug: print(found_request)
+                if found_request:
+                    print("Request detected!")
+                    found_location = RE_LATLON.search(msg['message'])
+                    if found_location:
+                        full, latitude, longitude, *kw = found_location.groups()
+                        if debug:
+                            print(latitude)
+                            print(longitude)
 
 if __name__ == '__main__':
     check_signal_group()
