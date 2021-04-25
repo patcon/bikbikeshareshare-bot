@@ -34,25 +34,6 @@ def generate_station_map_link(lat, lon):
     template = textwrap.dedent(template)
     return template.format(lat, lon)
 
-def fetch_messages():
-    proc = subprocess.run(
-            ["signal-cli", "--output", "json", "receive"],
-            stdout=subprocess.PIPE,
-            text=True,
-            )
-    messages = proc.stdout.strip().split('\n')
-    messages = [m for m in messages if m != '']
-    return messages
-
-def send_message(group_id, msg):
-    proc = subprocess.run(
-            ["signal-cli", "send", "--group", group_id, "--message", msg],
-            stdout=subprocess.PIPE,
-            text=True,
-            )
-    return proc.stdout.strip()
-
-
 CONTEXT_SETTINGS = dict(help_option_names=['--help', '-h'])
 
 # For recognizing a "bike request" message, regardless of skin-tone or gender.
@@ -75,6 +56,31 @@ RE_LATLON = re.compile(r"""(
                             %2C
                             (-?[\d.]+)     # longitude
                         )""", re.VERBOSE)
+
+class SignalClient:
+    def __init__(self):
+        pass
+
+    def fetchMessagesCli(self):
+        proc = subprocess.run(
+                ["signal-cli", "--output", "json", "receive"],
+                stdout=subprocess.PIPE,
+                text=True,
+                )
+        messages = proc.stdout.strip().split('\n')
+        messages = [m for m in messages if m != '']
+        return messages
+
+    def sendMessageCli(self, group_id, text):
+        proc = subprocess.run(
+                ["signal-cli", "send", "--group", group_id, "--message", text],
+                stdout=subprocess.PIPE,
+                text=True,
+                )
+        return proc.stdout.strip()
+
+    def watchMessagesDbus(self):
+        pass
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('--bikeshare-user', '-u',
@@ -114,7 +120,8 @@ RE_LATLON = re.compile(r"""(
 def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bikeshare_api_key, signal_group, noop, debug):
     """Check messages in a Signal group for Bikeshare Toronto code requests."""
 
-    messages = fetch_messages()
+    signal = SignalClient()
+    messages = signal.fetchMessagesCli()
     for line in messages:
         messages_data = json.loads(line)
         if debug: print(messages_data)
@@ -191,8 +198,8 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
                             print(code_msg)
                             print(station_map_msg)
 
-                        send_message(signal_group, code_msg)
-                        send_message(signal_group, station_map_msg)
+                        signal.sendMessageCli(signal_group, code_msg)
+                        signal.sendMessageCli(signal_group, station_map_msg)
 
 if __name__ == '__main__':
     check_signal_group()
