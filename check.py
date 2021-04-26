@@ -61,7 +61,7 @@ class SignalClient:
         if self.debug: [print(m) for m in messages]
         return messages
 
-    def fetchSyncMessagesCli(self):
+    def fetchSyncMessagesCli(self, group_id):
         def get_message(data):
             sync_message = data['envelope'].get('syncMessage', None)
             if sync_message:
@@ -71,6 +71,8 @@ class SignalClient:
             return None
 
         messages = [get_message(m) for m in self.fetchAllMessagesCli() if get_message(m)]
+        if group_id:
+            messages = [m for m in messages if m.get('groupInfo', {}).get('groupId', None) == group_id]
         return messages
 
     def sendMessageCli(self, group_id, text):
@@ -191,42 +193,39 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
     bikeshare.noop = noop
     bikeshare.debug = debug
 
-    messages = signal.fetchSyncMessagesCli()
+    messages = signal.fetchSyncMessagesCli(signal_group)
     for msg in messages:
-        if debug: print(msg['message'])
-        group = msg.get('groupInfo', None)
-        if group and group['groupId'] == signal_group:
-            print("Parsing new messages in Signal group...")
+        print("Parsing new messages in Signal group...")
 
-            found_request = RE_REQUEST.search(msg['message'])
-            if debug: print(found_request)
-            if found_request:
-                print("Request detected!")
-                found_location = RE_LATLON.search(msg['message'])
-                if found_location:
-                    full, latitude, longitude, *kw = found_location.groups()
-                    if debug:
-                        print(latitude)
-                        print(longitude)
+        found_request = RE_REQUEST.search(msg['message'])
+        if debug: print(found_request)
+        if found_request:
+            print("Request detected!")
+            found_location = RE_LATLON.search(msg['message'])
+            if found_location:
+                full, latitude, longitude, *kw = found_location.groups()
+                if debug:
+                    print(latitude)
+                    print(longitude)
 
-                    print('Fetching nearest station...')
-                    station = bikeshare.getNearestStation(latitude, longitude)
+                print('Fetching nearest station...')
+                station = bikeshare.getNearestStation(latitude, longitude)
 
-                    # Replace dropped pin latlon with station latlon.
-                    # TODO: Randomize these a bit.
-                    latitude = station['lat']
-                    longitude = station['lon']
-                    code = bikeshare.getRideCode(station['station_id'], latitude, longitude)
+                # Replace dropped pin latlon with station latlon.
+                # TODO: Randomize these a bit.
+                latitude = station['lat']
+                longitude = station['lon']
+                code = bikeshare.getRideCode(station['station_id'], latitude, longitude)
 
-                    code_msg = "\N{Sparkles} " + emojify_bike_code(code)
-                    station_map_msg = generate_station_map_link(latitude, longitude)
+                code_msg = "\N{Sparkles} " + emojify_bike_code(code)
+                station_map_msg = generate_station_map_link(latitude, longitude)
 
-                    if debug:
-                        print(code_msg)
-                        print(station_map_msg)
+                if debug:
+                    print(code_msg)
+                    print(station_map_msg)
 
-                    signal.sendMessageCli(signal_group, code_msg)
-                    signal.sendMessageCli(signal_group, station_map_msg)
+                signal.sendMessageCli(signal_group, code_msg)
+                signal.sendMessageCli(signal_group, station_map_msg)
 
 if __name__ == '__main__':
     check_signal_group()
