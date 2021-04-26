@@ -8,19 +8,6 @@ import textwrap
 
 from math import cos, sqrt
 
-ALL_STATIONS = json.loads(open("station_information.json").read())['data']['stations']
-R = 6371000 # radius of the Earth in m
-
-# Source: https://stackoverflow.com/a/46641933/504018
-def distance(lon1, lat1, lon2, lat2):
-    x = (float(lon2)-float(lon1)) * cos(0.5*(float(lat2)+float(lat1)))
-    y = (float(lat2)-float(lat1))
-    return R * sqrt( x*x + y*y )
-
-def get_nearest_stations(lat, lon):
-    nearsort = lambda d: distance(d['lon'], d['lat'], lon, lat)
-    return sorted(ALL_STATIONS, key=nearsort)
-
 def emojify_bike_code(code):
     code = code.replace('1', "\N{DIGIT ONE}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}") # digit keycap plus empty key
     code = code.replace('2', "\N{DIGIT TWO}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
@@ -82,6 +69,68 @@ class SignalClient:
     def watchMessagesDbus(self):
         pass
 
+class BikeshareClient():
+    ALL_STATIONS = json.loads(open("station_information.json").read())['data']['stations']
+    R = 6371000 # radius of the Earth in m
+    BASE_URL = 'https://tor.publicbikesystem.net'
+
+    stackify_uuid = '0abd9999-d354-425d-000a-7a0338134d3b'
+    debug = False
+    noop = True
+
+    def __init__(self, bikeshare_api_key, bikeshare_auth_token):
+        self.api_key = bikeshare_api_key
+        self.auth_token = bikeshare_auth_token
+
+    def getNearestStations(self, latitude, longitude):
+        nearsort = lambda d: self.__distance(d['lon'], d['lat'], longitude, latitude)
+        return sorted(self.ALL_STATIONS, key=nearsort)
+
+    def getNearestStation(self, latitude, longitude):
+        station = self.getNearestStations(latitude, longitude)[0]
+        if self.debug: print(station)
+        return station
+
+    def getRideCode(self, station_id, latitude, longitude):
+        if self.noop: return '12321'
+
+        uri_path = '/customer/v3/stations/{}/geofence-ride-codes'
+        full_url = self.BASE_URL + uri_path.format(station_id)
+
+        payload = {
+                'count': 1,
+                'latitude': latitude,
+                'longitude': longitude,
+                }
+
+        headers = {
+                'cookie': '.Stackify.Rum={}'.format(self.stackify_uuid),
+                'user-agent': 'okhttp/3.12.1',
+                'accept-encoding': 'gzip',
+                'x-api-key': self.api_key,
+                'x-auth-token': self.auth_token,
+                }
+
+        if self.debug:
+            print(headers)
+            print(payload)
+            print(full_url)
+
+        r = requests.post(full_url, json=payload, headers=headers)
+        res = r.json()
+
+        if self.debug: print(res)
+
+        code = res['codes'][0]['code']
+
+        return code
+
+    # Source: https://stackoverflow.com/a/46641933/504018
+    def __distance(self, lon1, lat1, lon2, lat2):
+        x = (float(lon2)-float(lon1)) * cos(0.5*(float(lat2)+float(lat1)))
+        y = (float(lat2)-float(lat1))
+        return self.R * sqrt( x*x + y*y )
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('--bikeshare-user', '-u',
               required=False,
@@ -121,6 +170,11 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
     """Check messages in a Signal group for Bikeshare Toronto code requests."""
 
     signal = SignalClient()
+
+    bikeshare = BikeshareClient(bikeshare_api_key, bikeshare_auth_token)
+    bikeshare.noop = noop
+    bikeshare.debug = debug
+
     messages = signal.fetchMessagesCli()
     for line in messages:
         messages_data = json.loads(line)
@@ -154,45 +208,16 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
                             print(longitude)
 
                         print('Fetching nearest station...')
-                        nearest_stations = get_nearest_stations(latitude, longitude)
-                        station = nearest_stations[0]
+                        station = bikeshare.getNearestStation(latitude, longitude)
 
-                        BASE_URL = 'https://tor.publicbikesystem.net/customer'
-                        uri_path = '/v3/stations/{}/geofence-ride-codes'
-
-                        stackify_uuid = '0abd9999-d354-425d-000a-7a0338134d3b'
-                        headers = {
-                                'cookie': '.Stackify.Rum={}'.format(stackify_uuid),
-                                'user-agent': 'okhttp/3.12.1',
-                                'accept-encoding': 'gzip',
-                                'x-api-key': bikeshare_api_key,
-                                'x-auth-token': bikeshare_auth_token,
-                                }
-
-                        payload = {
-                                'count': 1,
-                                'latitude': station['lat'],
-                                'longitude': station['lon'],
-                                }
-
-                        full_url = BASE_URL + uri_path.format(station['station_id'])
-                        if debug:
-                            print(headers)
-                            print(payload)
-                            print(full_url)
-                            print(station)
-
-                        if noop:
-                            code = '12321'
-                        else:
-                            r = requests.post(full_url, json=payload, headers=headers)
-                            res = r.json()
-                            if debug: print(res)
-                            code = res['codes'][0]['code']
+                        # Replace dropped pin latlon with station latlon.
+                        # TODO: Randomize these a bit.
+                        latitude = station['lat']
+                        longitude = station['lon']
+                        code = bikeshare.getRideCode(station['station_id'], latitude, longitude)
 
                         code_msg = "\N{Sparkles} " + emojify_bike_code(code)
-                        station_map_msg = generate_station_map_link(station['lat'], station['lon'])
-
+                        station_map_msg = generate_station_map_link(latitude, longitude)
 
                         if debug:
                             print(code_msg)
