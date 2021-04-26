@@ -22,8 +22,15 @@ functional.
 
 ## Usage
 
+Requirements: `signal-cli` (already configured)
+
 ```
-$ pipenv install
+# One terminal window
+$ make start-daemon PHONE=+15555555555
+
+# New terminal window
+$ brew install python@3.9 pygobject3 gtk+3
+$ pipenv --python `which python3.9` --site-packages install
 $ cp sample.env .env
 $ vim .env
 $ pipenv run python check.py --help

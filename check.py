@@ -1,3 +1,4 @@
+import base64
 import click
 import json
 import re
@@ -6,7 +7,9 @@ import subprocess
 import sys
 import textwrap
 
+from gi.repository import GLib
 from math import cos, sqrt
+from pydbus import SessionBus
 
 def emojify_bike_code(code):
     code = code.replace('1', "\N{DIGIT ONE}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}") # digit keycap plus empty key
@@ -186,22 +189,33 @@ class BikeshareClient():
 def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bikeshare_api_key, signal_group, noop, debug):
     """Check messages in a Signal group for Bikeshare Toronto code requests."""
 
-    signal = SignalClient()
-    signal.debug = debug
-
     bikeshare = BikeshareClient(bikeshare_api_key, bikeshare_auth_token)
     bikeshare.noop = noop
     bikeshare.debug = debug
 
-    messages = signal.fetchSyncMessagesCli(signal_group)
-    for msg in messages:
+    def byteArray2string(byteArray):
+        byteString = bytes(byteArray)
+        string = base64.b64encode(byteString)
+        # Convert byte string to unicode string
+        string = string.decode()
+        return string
+
+    def string2byteArray(string):
+        return list(base64.b64decode(string))
+
+    def processMessage(timestamp, source, dest, groupIdBytes, message, attachments):
+        group_id = byteArray2string(groupIdBytes)
+        if signal_group != group_id: return
+
+        group_name = signal.getGroupName(groupIdBytes)
+
         print("Parsing new messages in Signal group...")
 
-        found_request = RE_REQUEST.search(msg['message'])
+        found_request = RE_REQUEST.search(message)
         if debug: print(found_request)
         if found_request:
             print("Request detected!")
-            found_location = RE_LATLON.search(msg['message'])
+            found_location = RE_LATLON.search(message)
             if found_location:
                 full, latitude, longitude, *kw = found_location.groups()
                 if debug:
@@ -224,8 +238,17 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
                     print(code_msg)
                     print(station_map_msg)
 
-                signal.sendMessageCli(signal_group, code_msg)
-                signal.sendMessageCli(signal_group, station_map_msg)
+                signal.sendGroupMessage(code_msg, None, string2byteArray(signal_group))
+                signal.sendGroupMessage(station_map_msg, None, string2byteArray(signal_group))
+
+    bus = SessionBus()
+    loop = GLib.MainLoop()
+
+    signal = bus.get('org.asamk.Signal')
+
+    signal.onSyncMessageReceived = processMessage
+    signal.onMessageReceived = processMessage
+    loop.run()
 
 if __name__ == '__main__':
     check_signal_group()
