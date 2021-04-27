@@ -6,17 +6,31 @@ Currently it is preparing to detect shared location pins with variants of ":bike
 
 It runs on a Digital Ocean instance as a daemonized process that watches my group messages.
 
-## To Do
+## Features
 
-- [x] get signal-cli working
-- [x] detect messages
-- [x] extract latitude and longitude
-- [x] talk to bikeshare api with auth token
-- [x] find nearest station
-- [x] get ride code
-- [ ] do real user/pass auth with bikeshare api
-- [x] figure out dbus messaging bus
-- [x] Daemonize it somewhere in the cloud
+- [x] Runs as a daemonized process on a server
+- [x] Watches messages in one Signal group
+- [x] Shares a single membership between group members
+- [x] Responds to :bike::pray: ("bike please") pin drops: instant ride codes for nearest station
+- [ ] Shows dock availability [#9][]
+- [ ] Searches for bike dock nearest to a pin drop [#2][], optionally hinted for heading east/west/north/south [#14][]
+- [ ] Searches for e-bike nearest to a pin drop [#8][]
+- [ ] Discourages non-emoji communcation [#13][]
+- [ ] Responds to direct messages (search commands only) [#4][]
+- [ ] Notifies group when ride has ended and bike available again [#6][]
+- [ ] Alerts group when overage fees accumulate [#7][]
+- [ ] Allows faster ride code generation in exchange for memes [#10][]
+
+<!-- Links -->
+   [#9]: https://github.com/patcon/bikebikeshareshare-bot/issues/9
+   [#2]: https://github.com/patcon/bikebikeshareshare-bot/issues/2
+   [#14]: https://github.com/patcon/bikebikeshareshare-bot/issues/14
+   [#8]: https://github.com/patcon/bikebikeshareshare-bot/issues/8
+   [#4]: https://github.com/patcon/bikebikeshareshare-bot/issues/4
+   [#6]: https://github.com/patcon/bikebikeshareshare-bot/issues/6
+   [#7]: https://github.com/patcon/bikebikeshareshare-bot/issues/7
+   [#10]: https://github.com/patcon/bikebikeshareshare-bot/issues/10
+   [#13]: https://github.com/patcon/bikebikeshareshare-bot/issues/13
 
 ## Usage
 
