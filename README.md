@@ -13,8 +13,9 @@ It runs on a Digital Ocean instance as a daemonized process that watches my grou
 - [x] Shares a single membership between group members
 - [x] Responds to :bike::pray: ("bike please") pin drops: instant ride codes for nearest station
 - [ ] Shows dock availability [#9][]
-- [ ] Searches for bike dock nearest to a pin drop [#2][], optionally hinted for heading east/west/north/south [#14][]
-- [ ] Searches for e-bike nearest to a pin drop [#8][]
+- [ ] Searches for bike dock nearest to a pin drop [#2][]
+  - [ ] Allows optional hinting for heading east/west/north/south [#14][]
+  - [ ] Allows optional filtering for nearest e-bike [#8][]
 - [ ] Discourages non-emoji communcation [#13][]
 - [ ] Responds to direct messages (search commands only) [#4][]
 - [ ] Notifies group when ride has ended and bike available again [#6][]
