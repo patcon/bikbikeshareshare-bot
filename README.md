@@ -4,9 +4,7 @@ A bot for watching a Signal messenger group, and sharing bikeshare pin codes for
 
 Currently it is preparing to detect shared location pins with variants of ":bike::pray:" in the description.
 
-Right now, it only checks and responds to messages when command is run locally.
-It will need to be "daemonized" as a perpetually-running service in order to be
-functional.
+It runs on a Digital Ocean instance as a daemonized process that watches my group messages.
 
 ## To Do
 
@@ -17,8 +15,8 @@ functional.
 - [x] find nearest station
 - [x] get ride code
 - [ ] do real user/pass auth with bikeshare api
-- [ ] figure out dbus messaging bus
-- [ ] Daemonize it somewhere in the cloud
+- [x] figure out dbus messaging bus
+- [x] Daemonize it somewhere in the cloud
 
 ## Usage
 
