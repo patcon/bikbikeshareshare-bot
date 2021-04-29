@@ -46,6 +46,7 @@ $ brew install python@3.9 pygobject3 gtk+3
 $ pipenv --python `which python3.9` --site-packages install
 $ cp sample.env .env
 $ vim .env
+$ make prepare-osx
 $ pipenv run python check.py --help
 
 Usage: check.py [OPTIONS]
