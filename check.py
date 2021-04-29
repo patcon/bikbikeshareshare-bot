@@ -7,14 +7,23 @@ import subprocess
 import sys
 import textwrap
 
+from datetime import datetime
 from gi.repository import GLib
 from math import cos, sqrt
 from pydbus import SessionBus
+from random import randrange
 
-def emojify_bike_code(code):
-    code = code.replace('1', "\N{DIGIT ONE}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}") # digit keycap plus empty key
+def emojify_numbers(code):
+    code = code.replace('1', "\N{DIGIT ONE}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
     code = code.replace('2', "\N{DIGIT TWO}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
     code = code.replace('3', "\N{DIGIT THREE}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
+    code = code.replace('4', "\N{DIGIT FOUR}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
+    code = code.replace('5', "\N{DIGIT FIVE}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
+    code = code.replace('6', "\N{DIGIT SIX}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
+    code = code.replace('7', "\N{DIGIT SEVEN}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
+    code = code.replace('8', "\N{DIGIT EIGHT}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
+    code = code.replace('9', "\N{DIGIT NINE}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
+    code = code.replace('0', "\N{DIGIT ZERO}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
     return code
 
 def generate_station_map_link(lat, lon):
@@ -38,6 +47,8 @@ RE_REQUEST = re.compile(re.sub(r'\n +', '', r"""
                             \s*
                             \N{PERSON WITH FOLDED HANDS}
                         """), re.VERBOSE)
+
+RE_CHECKIN = re.compile(r"\U0001F512\u2B05\uFE0F\U0001F6B2")
 
 # For capturing latitude and longitude from a "bike request" message.
 RE_LATLON = re.compile(r"""(
@@ -110,6 +121,32 @@ class BikeshareClient():
         station = self.getNearestStations(latitude, longitude)[0]
         if self.debug: print(station)
         return station
+
+    def getLastTrip(self):
+        if self.noop: return (bool(randrange(2)), (30*60) - 5 + randrange(10))
+
+        uri_path = '/customer/v3/profile/trips?open=false'
+        full_url = self.BASE_URL + uri_path
+
+        headers = {
+                'cookie': '.Stackify.Rum={}'.format(self.stackify_uuid),
+                'user-agent': 'okhttp/3.12.1',
+                'accept-encoding': 'gzip',
+                'x-api-key': self.api_key,
+                'x-auth-token': self.auth_token,
+                }
+
+        r = requests.get(full_url, headers=headers)
+        res = r.json()
+
+        if self.debug: print(res)
+
+        last_trip = res['trips'].pop()
+        start = datetime.fromisoformat(last_trip['startTime'].replace('Z', ''))
+        end = datetime.fromisoformat(last_trip['endTime'].replace('Z', ''))
+        delta = end - start
+
+        return (last_trip['open'], delta.seconds)
 
     def getRideCode(self, station_id, latitude, longitude):
         if self.noop: return '12321'
@@ -213,7 +250,22 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
 
         found_request = RE_REQUEST.search(message)
         if debug: print(found_request)
-        if found_request:
+
+        found_checkin = RE_CHECKIN.search(message)
+        if debug: print(found_checkin)
+
+        if found_checkin:
+            print("Checkin detected!")
+            is_open, total_seconds = bikeshare.getLastTrip()
+            minutes = (total_seconds//60) % 60
+            seconds = total_seconds - minutes*60
+            duration = "{} {}".format(str(minutes), str(seconds).zfill(2))
+            hourglass = "\N{Hourglass with Flowing Sand}" if is_open else "\N{Hourglass}"
+            duration_msg = hourglass + " " + emojify_numbers(duration)
+
+            signal.sendGroupMessage(duration_msg, None, string2byteArray(signal_group))
+
+        elif found_request:
             print("Request detected!")
             found_location = RE_LATLON.search(message)
             if found_location:
@@ -231,7 +283,7 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
                 longitude = station['lon']
                 code = bikeshare.getRideCode(station['station_id'], latitude, longitude)
 
-                code_msg = "\N{Sparkles} " + emojify_bike_code(code)
+                code_msg = "\N{Sparkles} " + emojify_numbers(code)
                 station_map_msg = generate_station_map_link(latitude, longitude)
 
                 if debug:
