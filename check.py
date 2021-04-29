@@ -260,7 +260,7 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
             minutes = (total_seconds//60) % 60
             seconds = total_seconds - minutes*60
             duration = "{} {}".format(str(minutes), str(seconds).zfill(2))
-            hourglass = "\N{Hourglass with Flowing Sand}" if is_open else "\N{Hourglass}"
+            hourglass = "\N{Grimacing Face}\N{Hourglass with Flowing Sand}" if is_open else "\N{Hourglass}"
             duration_msg = hourglass + " " + emojify_numbers(duration)
 
             signal.sendGroupMessage(duration_msg, None, string2byteArray(signal_group))
