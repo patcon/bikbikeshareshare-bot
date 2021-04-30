@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   title: Bikeshare Toronto API
   description: |
-    This is unofficial API documentation for the private API used by the Bikeshare Toronto apps and physical infrastructure (docks, kiosks, etc.).
+    This is unofficial API documentation for the private API used by the Bikeshare Toronto apps and physical infrastructure (docks, kiosks, etc.). [Edit](https://github.com/patcon/bikebikeshareshare-bot/edit/main/bikeshare-swagger-spec.yml) | [View](https://github.com/patcon/bikebikeshareshare-bot/blob/main/bikeshare-swagger-spec.yml)
     
     To explore this tool, please:
     1. click the "Authorize" button below,
