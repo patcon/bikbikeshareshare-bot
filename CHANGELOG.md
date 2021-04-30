@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix that open trips were't shown when fetching last ride.
 
+### Added
+- Swagger spec for Bikeshare API.
+
 ## [0.2.0] - 2021-04-29
 ### Added
 - Echo ride duration after checkin messages, for both open

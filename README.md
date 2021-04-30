@@ -1,6 +1,7 @@
 # bike bike share share bot
 
 [![Keep a Changelog v1.1.0 badge][changelog-badge]][changelog]
+[![Swagger API badge][swagger-badge]][swagger-ui]
 
 A bot for watching a Signal messenger group, and sharing bikeshare pin codes for those who ask.
 
@@ -78,3 +79,5 @@ Options:
 <!-- Links -->
    [changelog]: ./CHANGELOG.md
    [changelog-badge]: https://img.shields.io/badge/changelog-Keep%20a%20Changelog%20v1.1.0-%23E05735
+   [swagger-badge]: https://img.shields.io/badge/swagger-OpenAPI%20v2.0-%2338b832
+   [swagger-ui]: https://editor.swagger.io/?url=https://raw.githubusercontent.com/patcon/bikebikeshareshare-bot/main/bikeshare-swagger-spec.yml
