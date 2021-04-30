@@ -48,7 +48,12 @@ RE_REQUEST = re.compile(re.sub(r'\n +', '', r"""
                             \N{PERSON WITH FOLDED HANDS}
                         """), re.VERBOSE)
 
-RE_CHECKIN = re.compile(r"\U0001F512\u2B05\uFE0F\U0001F6B2")
+# :lock::arrow_left::bike:
+REGEX_CHECKIN = r"\U0001F512\u2B05\uFE0F\U0001F6B2"
+# :stopwatch:
+REGEX_CHECK = r"\u23F1\uFE0F"
+# Used to match for trip status checks (incl checkins)
+RE_TRIP_STATUS = re.compile('{}|{}'.format(REGEX_CHECKIN, REGEX_CHECK))
 
 # For capturing latitude and longitude from a "bike request" message.
 RE_LATLON = re.compile(r"""(
@@ -251,11 +256,11 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
         found_request = RE_REQUEST.search(message)
         if debug: print(found_request)
 
-        found_checkin = RE_CHECKIN.search(message)
-        if debug: print(found_checkin)
+        found_trip_status = RE_TRIP_STATUS.search(message)
+        if debug: print(found_trip_status)
 
-        if found_checkin:
-            print("Checkin detected!")
+        if found_trip_status:
+            print("Trip status check detected!")
             is_open, total_seconds = bikeshare.getLastTrip()
             minutes = (total_seconds//60) % 60
             seconds = total_seconds - minutes*60
