@@ -125,7 +125,7 @@ class BikeshareClient():
     def getLastTrip(self):
         if self.noop: return (bool(randrange(2)), (30*60) - 5 + randrange(10))
 
-        uri_path = '/customer/v3/profile/trips?open=false'
+        uri_path = '/customer/v3/profile/trips'
         full_url = self.BASE_URL + uri_path
 
         headers = {
