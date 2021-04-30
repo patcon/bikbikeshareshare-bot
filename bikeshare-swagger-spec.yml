@@ -1,0 +1,298 @@
+swagger: "2.0"
+info:
+  title: Bikeshare Toronto API
+  description: |
+    This is unofficial API documentation for the private API used by the Bikeshare Toronto apps and physical infrastructure (docks, kiosks, etc.).
+    
+    To explore this tool, please:
+    1. click the "Authorize" button below,
+    2. enter the following non-secure "apiKey" `b71d6720c8f211e7b7ee0a3571039f73`,
+    3. leave the "authToken" field blank,
+    4. enter your username and password under "Basic Authorization",
+    5. click the "Try it out" button under `/v1/authenticate`,
+    6. click "Execute",
+    7. in the response body, copy the "token" value (this is your secure token used for subsequent API calls)
+    8. click "Authorize" button again, and finally
+    9. enter this token as your "authToken".
+  version: "1.0.0"
+# the domain of the service
+host:  cors-anywhere.herokuapp.com
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /https://tor.publicbikesystem.net
+securityDefinitions:
+  apikey:
+    type: apiKey
+    name: X-Api-Key
+    in: header
+  authToken:
+    type: apiKey
+    name: X-Auth-Token
+    in: header
+  basicAuth:
+    type: basic
+produces:
+  - application/json
+paths:
+  /customer/v3/profile/trips:
+    get:
+      summary: Get trip summaries
+      description: ''
+      security:
+        - apikey: []
+        - authToken: []
+      tags:
+        - Profile
+      responses:
+        200:
+          description: 'Listing of details for historic or active bike trips'
+      parameters:
+        - in: query
+          name: open
+          type: boolean
+          description: To restrict to "only open" or "only completed" rides, or otherwise to "show all". 
+  /customer/v3/stations/{stationId}/geofence-ride-codes:
+    post:
+      summary: 'Create Ride Code'
+      description: ''
+      security:
+        - apikey: []
+        - authToken: []
+      tags:
+        - Station
+      responses:
+        200:
+          description: ''
+      parameters:
+        - in: path
+          name: stationId
+          type: integer
+          required: true
+          description: Numeric ID of the station
+          default: 7496
+        - in: body
+          name: rideCode
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+              latitude:
+                type: number
+                format: double
+              longitude:
+                type: number
+                format: double
+            example:
+              count: 1
+              latitude: 43.654449
+              longitude: -79.4884443
+  /ube/mobile/v1/authenticate:
+    get:
+      summary: Authenticate User
+      description: The Products endpoint returns information about the Uber products offered at a given location. The response includes the display name and other details about each product, and lists the products in the proper display order.
+      security: 
+        - apikey: []
+        - basicAuth: []
+      tags: 
+        - Authorization
+      responses:  
+        "200":
+          description: An array of products
+          schema:
+            $ref: '#/definitions/Member'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /ube/mobile/v2/member:
+    get:
+      summary: Get Member
+      security:
+        - apikey: []
+        - authToken: []
+      tags:
+        - Member
+      responses:
+        200:
+          description: ''
+    patch:
+      summary: Update Member
+      tags:
+        - Member
+      responses:
+        200:
+          description: ''
+  /ube/mobile/v1/public/plans/{planId}/feesum:
+    get:
+      summary: Get Fee Summary
+      security:
+        - apikey: []
+        - authToken: []
+      tags:
+        - Plan
+      parameters:
+        - in: path
+          name: planId
+          type: integer
+          required: true
+          description: Numeric ID of the plan
+          default: 197
+        - in: query
+          name: nobikes
+          type: integer
+          description: Number of bikes in order to be summarized.
+          default: 1
+      responses:
+        200:
+          description: ''
+  /ube/mobile/v1/members/{userId}/plan:
+    post:
+      summary: 'Create Plan Purchase'
+      description: |
+        Find the userId as the `id` returned from the Fetch Member API call.
+      security:
+        - apikey: []
+        - authToken: []
+      tags:
+        - Member
+      responses:
+        200:
+          description: ''
+      parameters:
+        - in: path
+          name: userId
+          type: integer
+          required: true
+          description: Numeric ID of the user
+        - in: body
+          name: plan
+          schema:
+            type: object
+            properties:
+              agreementId:
+                type: integer
+              nbBikes:
+                type: integer
+              planId:
+                type: integer
+            example:
+              agreementId: 1
+              nbBikes: 1
+              planId: 197
+definitions:
+  Member:
+    properties:
+      agreementDate:
+        type: string
+      agreementId:
+        type: integer
+      agreementVersion:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      inactivePlan:
+        type: object
+      lastName:
+        type: string
+      optInAccountEmails:
+        type: boolean
+  Product:
+    properties:
+      product_id:
+        type: string
+        description: Unique identifier representing a specific product for a given latitude & longitude. For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles.
+      description:
+        type: string
+        description: Description of product.
+      display_name:
+        type: string
+        description: Display name of product.
+      capacity:
+        type: integer
+        description: Capacity of product. For example, 4 people.
+      image:
+        type: string
+        description: Image URL representing the product.
+  ProductList:
+    properties:
+      products:
+        description: Contains the list of products
+        type: array
+        items: 
+          $ref: "#/definitions/Product"
+  PriceEstimate:
+    properties:
+      product_id:
+        type: string
+        description: Unique identifier representing a specific product for a given latitude & longitude. For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles
+      currency_code:
+        type: string
+        description: "[ISO 4217](http://en.wikipedia.org/wiki/ISO_4217) currency code."
+      display_name:
+        type: string
+        description: Display name of product.
+      estimate: 
+        type: string
+        description: Formatted string of estimate in local currency of the start location. Estimate could be a range, a single number (flat rate) or "Metered" for TAXI.
+      low_estimate:
+        type: number
+        description: Lower bound of the estimated price.
+      high_estimate:
+        type: number
+        description: Upper bound of the estimated price.
+      surge_multiplier:
+        type: number
+        description: Expected surge multiplier. Surge is active if surge_multiplier is greater than 1. Price estimate already factors in the surge multiplier.
+  Profile:
+    properties:
+      first_name:
+        type: string
+        description: First name of the Uber user.
+      last_name:
+        type: string
+        description: Last name of the Uber user.
+      email:
+        type: string
+        description: Email address of the Uber user
+      picture:
+        type: string
+        description: Image URL of the Uber user.
+      promo_code:
+        type: string
+        description: Promo code of the Uber user.   
+  Activity:
+    properties:
+      uuid:
+        type: string
+        description: Unique identifier for the activity
+  Activities:
+    properties:
+      offset:
+        type: integer
+        format: int32
+        description: Position in pagination.
+      limit:
+        type: integer
+        format: int32
+        description: Number of items to retrieve (100 max).
+      count:
+        type: integer
+        format: int32
+        description: Total number of items available.
+      history:
+        type: array
+        items:
+          $ref: '#/definitions/Activity'
+  Error:
+    properties:
+      errorCode:
+        type: string
+      message:
+        type: string
+      moreInfo:
+        type: string
