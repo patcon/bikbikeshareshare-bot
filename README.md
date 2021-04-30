@@ -16,13 +16,13 @@ It runs on a Digital Ocean instance as a daemonized process that watches my grou
 - [x] Shares a single membership between group members
 - [x] Responds to :bike::pray: ("bike please") pin drops: instant ride codes for nearest station
 - [ ] Shows dock availability [#9][]
-- [ ] Searches for nearest bike dock in relation to a pin drop [#2][]
+- [x] Searches for nearest bike dock in relation to a pin drop [#2][]
   - [ ] Supports optional hinting for heading east/west/north/south [#14][]
   - [ ] Supports optional filtering for nearest e-bike [#8][]
   - [ ] Responds to direct messages [#4][]
 - [ ] Discourages non-emoji communcation [#13][]
 - [ ] Notifies group when ride has ended and bike available again [#6][]
-- [ ] Alerts group when overage fees accumulate [#7][]
+- [x] Alerts group when overage fees accumulate [#7][]
 - [ ] Allows faster ride code generation in exchange for memes [#10][]
 
 <!-- Links -->

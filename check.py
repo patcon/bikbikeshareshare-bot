@@ -35,6 +35,10 @@ def generate_station_map_link(lat, lon):
 
 CONTEXT_SETTINGS = dict(help_option_names=['--help', '-h'])
 
+REGEX_ANY_BIKE = "[ \N{BICYCLE}\N{BICYCLIST}\N{MOUNTAIN BICYCLIST}]"
+
+RE_NEARBY = re.compile("\N{Round Pushpin}")
+
 # For recognizing a "bike request" message, regardless of skin-tone or gender.
 RE_REQUEST = re.compile(re.sub(r'\n +', '', r"""
                             [
@@ -255,8 +259,43 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
 
         print("Parsing new messages in Signal group...")
 
-        found_request = RE_REQUEST.search(message)
-        if debug: print(found_request)
+        found_location = RE_LATLON.search(message)
+        # Location pins will have an attachment as well (don't want to match messages with Google links only).
+        if attachments and found_location:
+            print("Location pin detected")
+
+            full, latitude, longitude, *kw = found_location.groups()
+            if debug:
+                print(latitude)
+                print(longitude)
+
+            print('Fetching nearest station...')
+            station = bikeshare.getNearestStation(latitude, longitude)
+
+            # Replace dropped pin latlon with station latlon.
+            # TODO: Randomize these a bit.
+            latitude = station['lat']
+            longitude = station['lon']
+
+            found_request = RE_REQUEST.search(message)
+            if debug: print(found_request)
+            if found_request:
+                print("Request detected")
+                code = bikeshare.getRideCode(station['station_id'], latitude, longitude)
+                code_msg = "\N{Sparkles} " + emojify_numbers(code)
+                if debug: print(code_msg)
+                signal.sendGroupMessage(code_msg, None, string2byteArray(signal_group))
+
+            found_nearby = RE_NEARBY.search(message)
+            if debug: print(found_nearby)
+            if found_nearby or found_request:
+                print("Nearby query detected")
+                station_map_msg = generate_station_map_link(latitude, longitude)
+                if debug: print(station_map_msg)
+                signal.sendGroupMessage(station_map_msg, None, string2byteArray(signal_group))
+
+        else:
+            print("Regular message detected")
 
         found_trip_status = RE_TRIP_STATUS.search(message)
         if debug: print(found_trip_status)
@@ -272,34 +311,6 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
 
             signal.sendGroupMessage(duration_msg, None, string2byteArray(signal_group))
 
-        elif found_request:
-            print("Request detected!")
-            found_location = RE_LATLON.search(message)
-            # Location pins will have an attachment as well (don't want to match messages with Google links only).
-            if attachments and found_location:
-                full, latitude, longitude, *kw = found_location.groups()
-                if debug:
-                    print(latitude)
-                    print(longitude)
-
-                print('Fetching nearest station...')
-                station = bikeshare.getNearestStation(latitude, longitude)
-
-                # Replace dropped pin latlon with station latlon.
-                # TODO: Randomize these a bit.
-                latitude = station['lat']
-                longitude = station['lon']
-                code = bikeshare.getRideCode(station['station_id'], latitude, longitude)
-
-                code_msg = "\N{Sparkles} " + emojify_numbers(code)
-                station_map_msg = generate_station_map_link(latitude, longitude)
-
-                if debug:
-                    print(code_msg)
-                    print(station_map_msg)
-
-                signal.sendGroupMessage(code_msg, None, string2byteArray(signal_group))
-                signal.sendGroupMessage(station_map_msg, None, string2byteArray(signal_group))
 
     bus = SessionBus()
     loop = GLib.MainLoop()

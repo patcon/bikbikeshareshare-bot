@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Swagger spec for Bikeshare API.
 - Command to check trip status with :stopwatch: #16
+- Command to search for nearest station. #2
 
 ## [0.2.0] - 2021-04-29
 ### Added
