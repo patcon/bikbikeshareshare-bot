@@ -1,5 +1,7 @@
 # bike bike share share bot
 
+[![Keep a Changelog v1.1.0 badge][changelog-badge]][changelog]
+
 A bot for watching a Signal messenger group, and sharing bikeshare pin codes for those who ask.
 
 Currently it is preparing to detect shared location pins with variants of ":bike::pray:" in the description.
@@ -72,3 +74,7 @@ Options:
   -d, --debug                     Show debug output
   -h, --help                      Show this message and exit.
 ```
+
+<!-- Links -->
+   [changelog]: ./CHANGELOG.md
+   [changelog-badge]: https://img.shields.io/badge/changelog-Keep%20a%20Changelog%20v1.1.0-%23E05735
