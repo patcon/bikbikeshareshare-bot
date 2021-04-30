@@ -249,6 +249,8 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
         group_id = byteArray2string(groupIdBytes)
         if signal_group != group_id: return
 
+        if debug: print(attachments)
+
         group_name = signal.getGroupName(groupIdBytes)
 
         print("Parsing new messages in Signal group...")
@@ -273,7 +275,8 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
         elif found_request:
             print("Request detected!")
             found_location = RE_LATLON.search(message)
-            if found_location:
+            # Location pins will have an attachment as well (don't want to match messages with Google links only).
+            if attachments and found_location:
                 full, latitude, longitude, *kw = found_location.groups()
                 if debug:
                     print(latitude)
