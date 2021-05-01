@@ -277,6 +277,7 @@ class BikeshareClient():
               )
 def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bikeshare_api_key, signal_group, noop, debug):
     """Check messages in a Signal group for Bikeshare Toronto code requests."""
+    signal_groups = signal_group.split(',')
 
     bikeshare = BikeshareClient(bikeshare_api_key, bikeshare_auth_token)
     bikeshare.noop = noop
@@ -294,7 +295,7 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
 
     def processMessage(timestamp, source, dest, groupIdBytes, message, attachments):
         group_id = byteArray2string(groupIdBytes)
-        if signal_group != group_id: return
+        if group_id not in signal_groups: return
 
         if debug: print(attachments)
 
@@ -327,7 +328,7 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
                 code = bikeshare.getRideCode(station['station_id'], latitude, longitude)
                 code_msg = "\N{Sparkles} " + emojify_numbers(code)
                 if debug: print(code_msg)
-                signal.sendGroupMessage(code_msg, '', string2byteArray(signal_group))
+                signal.sendGroupMessage(code_msg, '', string2byteArray(group_id))
 
             found_nearby = RE_NEARBY.search(message)
             if debug: print(found_nearby)
@@ -336,7 +337,7 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
                 counts = bikeshare.getStationCounts(station['station_id'])
                 station_map_msg = generate_station_map_link(latitude, longitude, counts)
                 if debug: print(station_map_msg)
-                signal.sendGroupMessage(station_map_msg, '', string2byteArray(signal_group))
+                signal.sendGroupMessage(station_map_msg, '', string2byteArray(group_id))
 
         else:
             print("Regular message detected")
@@ -353,7 +354,7 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
             hourglass = "\N{Grimacing Face}\N{Hourglass with Flowing Sand}" if is_open else "\N{Hourglass}"
             duration_msg = hourglass + " " + emojify_numbers(duration)
 
-            signal.sendGroupMessage(duration_msg, None, string2byteArray(signal_group))
+            signal.sendGroupMessage(duration_msg, None, string2byteArray(group_id))
 
 
     bus = SessionBus()
