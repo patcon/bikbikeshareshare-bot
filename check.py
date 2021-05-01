@@ -26,12 +26,26 @@ def emojify_numbers(code):
     code = code.replace('0', "\N{DIGIT ZERO}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}")
     return code
 
-def generate_station_map_link(lat, lon):
+def generate_station_map_link(lat, lon, counts):
+    tokens = {
+            'dock_emoji': "\N{No Bicycles}",
+            'dock_count': str(counts['docks']),
+            'bike_emoji': "\N{Bicycle}",
+            'bike_count': str(counts['regular']),
+            'ebike_emoji': "\N{High Voltage Sign}",
+            'ebike_count': counts['electric'],
+            }
+    counts_string = "{bike_count}{bike_emoji} {dock_count}{dock_emoji}"
+    if tokens['ebike_count']:
+        counts_string = counts_string + " {ebike_count}{ebike_emoji}"
+    counts_string = counts_string.format(**tokens)
+    counts_string = emojify_numbers(counts_string)
     template = """\
             \N{Bicyclist} \N{Dash Symbol} \N{Round Pushpin} \N{Pedestrian} \N{Pedestrian} \N{Pedestrian} \N{Hourglass with Flowing Sand} \N{Raised Hand with Fingers Splayed}
+            {}
             https://maps.google.com/maps?q={}%2C{}"""
     template = textwrap.dedent(template)
-    return template.format(lat, lon)
+    return template.format(counts_string, lat, lon)
 
 CONTEXT_SETTINGS = dict(help_option_names=['--help', '-h'])
 
@@ -113,6 +127,7 @@ class BikeshareClient():
     ALL_STATIONS = json.loads(open("station_information.json").read())['data']['stations']
     R = 6371000 # radius of the Earth in m
     BASE_URL = 'https://tor.publicbikesystem.net'
+    GBFS_BASE_URL = 'https://toronto-us.publicbikesystem.net/customer/gbfs'
 
     stackify_uuid = '0abd9999-d354-425d-000a-7a0338134d3b'
     debug = False
@@ -121,6 +136,28 @@ class BikeshareClient():
     def __init__(self, bikeshare_api_key, bikeshare_auth_token):
         self.api_key = bikeshare_api_key
         self.auth_token = bikeshare_auth_token
+
+    def getAllStationStatuses(self):
+        uri_path = '/v2/en/station_status'
+        full_url = self.GBFS_BASE_URL + uri_path
+        res = requests.get(full_url)
+        return res.json()['data']['stations']
+
+    def getStationStatus(self, station_id):
+        stations = self.getAllStationStatuses()
+        [station] = [s for s in stations if s['station_id'] == station_id]
+        return station
+
+    def getStationCounts(self, station_id):
+        station = self.getStationStatus(station_id)
+        vehicles = station['vehicle_types_available']
+        vehicles = { v['vehicle_type_id']:v['count'] for v in vehicles}
+        counts = {
+                'regular': vehicles.get('ICONIC', 0),
+                'electric': vehicles.get('EFIT', 0) + vehicles.get('EFIT G5', 0) + vehicles.get('BOOST', 0),
+                'docks': station['num_docks_available'],
+                }
+        return counts
 
     def getNearestStations(self, latitude, longitude):
         nearsort = lambda d: self.__distance(d['lon'], d['lat'], longitude, latitude)
@@ -296,7 +333,8 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
             if debug: print(found_nearby)
             if found_nearby or found_request:
                 print("Nearby query detected")
-                station_map_msg = generate_station_map_link(latitude, longitude)
+                counts = bikeshare.getStationCounts(station['station_id'])
+                station_map_msg = generate_station_map_link(latitude, longitude, counts)
                 if debug: print(station_map_msg)
                 signal.sendGroupMessage(station_map_msg, '', string2byteArray(signal_group))
 
