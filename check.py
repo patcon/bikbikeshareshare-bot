@@ -151,8 +151,14 @@ class BikeshareClient():
         if self.debug: print(res)
 
         last_trip = res['trips'].pop()
-        start = datetime.fromisoformat(last_trip['startTime'].replace('Z', ''))
-        end = datetime.fromisoformat(last_trip['endTime'].replace('Z', ''))
+
+        start = last_trip['startTime'].replace('Z', '')
+        start = datetime.fromisoformat(start)
+
+        # Use current time if open trip and no endTime.
+        end = last_trip['endTime']
+        end = datetime.fromisoformat(end.replace('Z', '')) if end else datetime.utcnow()
+
         delta = end - start
 
         return (last_trip['open'], delta.seconds)
