@@ -293,7 +293,10 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
     def string2byteArray(string):
         return list(base64.b64decode(string))
 
-    def processMessage(timestamp, source, dest, groupIdBytes, message, attachments):
+    def processSyncMessage(timestamp, source, dest, groupIdBytes, message, attachments):
+        processMessage(timestamp, source, groupIdBytes, message, attachments)
+
+    def processMessage(timestamp, source, groupIdBytes, message, attachments):
         group_id = byteArray2string(groupIdBytes)
         if group_id not in signal_groups: return
 
@@ -362,7 +365,7 @@ def check_signal_group(bikeshare_user, bikeshare_pass, bikeshare_auth_token, bik
 
     signal = bus.get('org.asamk.Signal')
 
-    signal.onSyncMessageReceived = processMessage
+    signal.onSyncMessageReceived = processSyncMessage
     signal.onMessageReceived = processMessage
     loop.run()
 

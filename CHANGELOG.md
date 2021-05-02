@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix that open trips were't shown when fetching last ride.
 - Fix Signal messages enable to be sent to dbus on Ubuntu.
+- Accomodate Message as well as SyncMessage from dbus stream. #3
 
 ### Added
 - Swagger spec for Bikeshare API.

@@ -1,4 +1,4 @@
-PHONE = +13475597622
+PHONE = +17787662227
 
 start-daemon:
 	signal-cli --output=json --username="${PHONE}" daemon
