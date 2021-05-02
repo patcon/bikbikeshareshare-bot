@@ -3,13 +3,20 @@
 [![Keep a Changelog v1.1.0 badge][changelog-badge]][changelog]
 [![Swagger API badge][swagger-badge]][swagger-ui]
 
-A bot for watching a Signal messenger group, and sharing bikeshare pin codes for those who ask.
+A bot for watching a Signal messenger group, and sharing bikeshare ride codes with those who ask.
 
-Currently it is preparing to detect shared location pins with variants of ":bike::pray:" in the description.
+It runs on a Digital Ocean instance as a daemonized process that watches a designated group for messages.
 
-It runs on a Digital Ocean instance as a daemonized process that watches my group messages.
+## Commands
 
-## Features
+| Command | Description |
+|---------|-------------|
+| `<location>`<br />:round_pushpin: | _"what's nearby?"_ Requests info from nearest station.
+| `<location>`<br />:bike::pray:    | _"bike, please!"_ Requests ride code for nearest station.
+| :lock::arrow_left::bike:     | _"bike's returned!"_ Tells group that bike was returned, and echos final ride time.
+| :stopwatch:                  | _"what's my ride status?"_ Great for mid-trip, this echos current ride time. (same as above)
+
+## Roadmap
 
 - [x] Runs as a daemonized process on a server
 - [x] Watches messages in one Signal group
@@ -24,6 +31,7 @@ It runs on a Digital Ocean instance as a daemonized process that watches my grou
 - [ ] Notifies group when ride has ended and bike available again [#6][]
 - [x] Alerts group when overage fees accumulate [#7][]
 - [ ] Allows faster ride code generation in exchange for memes [#10][]
+- [x] Runs as a real Signal user or a Signal bot [#3][]
 
 <!-- Links -->
    [#9]: https://github.com/patcon/bikebikeshareshare-bot/issues/9
@@ -35,6 +43,7 @@ It runs on a Digital Ocean instance as a daemonized process that watches my grou
    [#7]: https://github.com/patcon/bikebikeshareshare-bot/issues/7
    [#10]: https://github.com/patcon/bikebikeshareshare-bot/issues/10
    [#13]: https://github.com/patcon/bikebikeshareshare-bot/issues/13
+   [#3]: https://github.com/patcon/bikebikeshareshare-bot/issues/3
 
 ## Usage
 
