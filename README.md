@@ -3,6 +3,8 @@
 [![Keep a Changelog v1.1.0 badge][changelog-badge]][changelog]
 [![Swagger API badge][swagger-badge]][swagger-ui]
 
+<a href="docs/screenshot.jpg"><img src="docs/screenshot.jpg" width="50%" align="center" /></a>
+
 A bot for watching a Signal messenger group, and sharing bikeshare ride codes with those who ask.
 
 It runs on a Digital Ocean instance as a daemonized process that watches a designated group for messages.

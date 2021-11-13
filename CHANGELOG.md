@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Command to search for nearest station. #2
 - Bike/dock availability shown with station messages. #9
 - Bot can watch multiple Signal groups.
+- Screenshot in readme.
 
 ## [0.2.0] - 2021-04-29
 ### Added
