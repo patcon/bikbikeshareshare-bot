@@ -24,7 +24,7 @@ It runs on a Digital Ocean instance as a daemonized process that watches a desig
 - [x] Watches messages in one Signal group
 - [x] Shares a single membership between group members
 - [x] Responds to :bike::pray: ("bike please") pin drops: instant ride codes for nearest station
-- [ ] Shows dock availability [#9][]
+- [x] Shows dock availability [#9][]
 - [x] Searches for nearest bike dock in relation to a pin drop [#2][]
   - [ ] Supports optional hinting for heading east/west/north/south [#14][]
   - [ ] Supports optional filtering for nearest e-bike [#8][]
